@@ -1,6 +1,7 @@
 {
   "name": "unm/adauth",
   "description": "An Active Directory authentication driver for Laravel 4",
+  "keywords": ["laravel"],
   "license": "MIT",
   "authors": [
     {
