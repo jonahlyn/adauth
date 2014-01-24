@@ -26,13 +26,12 @@ class AdauthUserProvider implements UserProviderInterface
     $this->config = $config;
 
     // Set DEBUGGING
-    if($this->config['debug']){
+    if ($this->config['debug']) {
       ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
     }
 
     // Connect to the domain controller
-    if (!$this->conn = ldap_connect($this->config['host'], $this->config['port']))
-    {
+    if (!$this->conn = ldap_connect($this->config['host'], $this->config['port'])) {
       throw new \Exception("Could not connect to AD host {$this->config['host']}: " . ldap_error($this->conn));
     }
 
@@ -41,8 +40,7 @@ class AdauthUserProvider implements UserProviderInterface
     ldap_set_option($this->conn, LDAP_OPT_REFERRALS, 0);
 
     // Bind to AD
-    if (!@ldap_bind($this->conn, "{$this->config['dn_user']}", $this->config['dn_pass']))
-    {
+    if (!@ldap_bind($this->conn, "{$this->config['dn_user']}", $this->config['dn_pass'])) {
       throw new \Exception('Could not bind to AD: ' . "{$this->config['dn_user']}: " . ldap_error($this->conn));
     }
   }
@@ -52,8 +50,7 @@ class AdauthUserProvider implements UserProviderInterface
    */
   public function __destruct()
   {
-    if (!is_null($this->conn))
-    {
+    if (!is_null($this->conn)) {
       ldap_unbind($this->conn);
     }
   }
@@ -67,15 +64,13 @@ class AdauthUserProvider implements UserProviderInterface
   public function retrieveByID($identifier)
   {
     $result = @ldap_read($this->conn, $identifier, 'objectclass=*', $this->config['attributes']);
-    if ($result === FALSE)
-    {
+    if ($result === FALSE) {
       return null;
     }
 
     $entries = ldap_get_entries($this->conn, $result);
 
-    if ($entries['count'] == 0 || $entries['count'] > 1)
-    {
+    if ($entries['count'] == 0 || $entries['count'] > 1) {
       return null;
     }
 
@@ -91,15 +86,13 @@ class AdauthUserProvider implements UserProviderInterface
   public function retrieveByCredentials(array $credentials)
   {
     $result = ldap_search($this->conn, $this->config['basedn'], "cn=" . $credentials['username'], $this->config['attributes']);
-    if ($result === FALSE)
-    {
+    if ($result === FALSE) {
       return NULL;
     }
 
     $entries = ldap_get_entries($this->conn, $result);
 
-    if ($entries['count'] == 0 || $entries['count'] > 1)
-    {
+    if ($entries['count'] == 0 || $entries['count'] > 1) {
       return NULL;
     }
 
@@ -115,18 +108,15 @@ class AdauthUserProvider implements UserProviderInterface
    */
   public function validateCredentials(UserInterface $user, array $credentials)
   {
-    if ($user == NULL)
-    {
+    if ($user == NULL) {
       return FALSE;
     }
 
-    if ($credentials['password'] == '')
-    {
+    if ($credentials['password'] == '') {
       return FALSE;
     }
 
-    if (!$result = @ldap_bind($this->conn, $this->config['domain']."\\" . $credentials['username'], $credentials['password']))
-    {
+    if (!$result = @ldap_bind($this->conn, $this->config['domain'] . "\\" . $credentials['username'], $credentials['password'])) {
       return FALSE;
     }
 
@@ -150,43 +140,35 @@ class AdauthUserProvider implements UserProviderInterface
     $groups = array_map('strtolower', array_values($entry['memberof']));
 
     // View Group Check
-    if (count($this->config['groups']) > 0)
-    {
+    if (count($this->config['groups']) > 0) {
       $entry['type'] = NULL;
     }
 
-    foreach ($this->config['groups'] as $group)
-    {
-      if (isset($entry['dn']) && in_array(strtolower($group), $groups))
-      {
+    foreach ($this->config['groups'] as $group) {
+      if (isset($entry['dn']) && in_array(strtolower($group), $groups)) {
         $entry['type'] = 1;
         $entry['group'] = $group;
       }
     }
 
     // Admin Group Check
-    foreach ($this->config['admins'] as $group)
-    {
-      if (isset($entry['dn']) && in_array(strtolower($group), $groups))
-      {
+    foreach ($this->config['admins'] as $group) {
+      if (isset($entry['dn']) && in_array(strtolower($group), $groups)) {
         $entry['type'] = 0;
         $entry['group'] = $group;
       }
     }
 
     // Override Check
-    foreach ($this->config['override'] as $username => $access)
-    {
-      if (isset($entry['username']) && $entry['username'] == $username)
-      {
+    foreach ($this->config['override'] as $username => $access) {
+      if (isset($entry['username']) && $entry['username'] == $username) {
         $entry['type'] = $access;
         $entry['group'] = 'custom';
       }
     }
 
     // User does not have access
-    if ($entry['type'] === NULL)
-    {
+    if ($entry['type'] === NULL) {
       return NULL;
     }
 
