@@ -16,7 +16,10 @@
   "require-dev": {
     "orchestra/testbench": "2.0.*",
     "illuminate/auth": "4.0.*",
-    "illuminate/log" : "4.0.*"
+    "illuminate/log" : "4.0.*",
+    "mockery/mockery": "dev-master@dev",
+    "lstrojny/phpunit-function-mocker": "dev-master",
+    "phpunit/phpunit": "3.7.*"
   },
   "autoload": {
     "psr-0": {
