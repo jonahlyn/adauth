@@ -40,7 +40,8 @@ class AdauthUserProvider implements UserProviderInterface
     ldap_set_option($this->conn, LDAP_OPT_REFERRALS, 0);
 
     // Bind to AD
-    if (!@ldap_bind($this->conn, "{$this->config['dn_user']}", $this->config['dn_pass'])) {
+    if (!@ldap_bind($this->conn, "{$this->config['dn_user']}@{$this->config['domain']}", $this->config['dn_pass']))
+    {
       throw new \Exception('Could not bind to AD: ' . "{$this->config['dn_user']}: " . ldap_error($this->conn));
     }
   }
@@ -85,8 +86,9 @@ class AdauthUserProvider implements UserProviderInterface
    */
   public function retrieveByCredentials(array $credentials)
   {
-    $result = ldap_search($this->conn, $this->config['basedn'], "cn=" . $credentials['username'], $this->config['attributes']);
-    if ($result === FALSE) {
+    $result = ldap_search($this->conn, $this->config['basedn'], "samaccountname=" . $credentials['username'], $this->config['attributes']);
+    if ($result === FALSE)
+    {
       return NULL;
     }
 
@@ -116,7 +118,8 @@ class AdauthUserProvider implements UserProviderInterface
       return FALSE;
     }
 
-    if (!$result = @ldap_bind($this->conn, $this->config['domain'] . "\\" . $credentials['username'], $credentials['password'])) {
+    if (!$result = @ldap_bind($this->conn, $user->id, $credentials['password']))
+    {
       return FALSE;
     }
 
@@ -131,7 +134,7 @@ class AdauthUserProvider implements UserProviderInterface
   public function clean(array $entry)
   {
     $entry['id'] = $entry['dn'];
-    $entry['username'] = $entry['cn'][0];
+    $entry['username'] = $entry['samaccountname'][0];
 
     // Set default user type (ACL: 0 = admin, 1 = user)
     $entry['type'] = 1;
@@ -160,8 +163,10 @@ class AdauthUserProvider implements UserProviderInterface
     }
 
     // Override Check
-    foreach ($this->config['override'] as $username => $access) {
-      if (isset($entry['username']) && $entry['username'] == $username) {
+    foreach ($this->config['override'] as $username => $access)
+    {
+      if (isset($entry['samaccountname']) && $entry['samaccountname'][0] == $username)
+      {
         $entry['type'] = $access;
         $entry['group'] = 'custom';
       }
