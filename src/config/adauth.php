@@ -42,9 +42,9 @@ return array(
   // Groups with admin access (Optional)
   'admins' => array(),
 
-  // Override by username (Optional)
-  'override' => array(
-    //'an_admin' => 0
+  // Custom Groups (Optional)
+  'custom' => array(
+    // 2 => 'some_group'
   ),
 
 );

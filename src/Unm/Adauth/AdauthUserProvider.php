@@ -133,6 +133,8 @@ class AdauthUserProvider implements UserProviderInterface
    */
   public function clean(array $entry)
   {
+    xdebug_break();
+
     $entry['id'] = $entry['dn'];
     $entry['username'] = $entry['samaccountname'][0];
 
@@ -162,13 +164,13 @@ class AdauthUserProvider implements UserProviderInterface
       }
     }
 
-    // Override Check
-    foreach ($this->config['override'] as $username => $access)
+    // Custom Group Check
+    foreach ($this->config['custom'] as $type => $group)
     {
-      if (isset($entry['samaccountname']) && $entry['samaccountname'][0] == $username)
+      if (isset($entry['dn']) && in_array(strtolower($group), $groups))
       {
-        $entry['type'] = $access;
-        $entry['group'] = 'custom';
+        $entry['type'] = $type;
+        $entry['group'] = $group;
       }
     }
 
