@@ -133,8 +133,6 @@ class AdauthUserProvider implements UserProviderInterface
    */
   public function clean(array $entry)
   {
-    xdebug_break();
-
     $entry['id'] = $entry['dn'];
     $entry['username'] = $entry['samaccountname'][0];
 
